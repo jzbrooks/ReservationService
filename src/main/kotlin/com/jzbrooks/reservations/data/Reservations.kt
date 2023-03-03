@@ -2,6 +2,7 @@ package com.jzbrooks.reservations.data
 
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.dao.id.LongIdTable
+import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.javatime.date
 import org.jetbrains.exposed.sql.javatime.time
 
@@ -14,14 +15,12 @@ data class ReservationDto(
     val time: String, // hh:mm
 )
 
-object Reservations : LongIdTable() {
-    val name = varchar("name", 70)
+object Reservations : Table() {
     val email = varchar("email", 50)
-    val partySize = integer("party_size")
     val date = date("date")
     val time = time("time")
+    val partySize = integer("party_size")
+    val name = varchar("name", 70)
 
-    init {
-        uniqueIndex(email, date, time)
-    }
+    override val primaryKey = PrimaryKey(email, date, time, name = "PK_email_date_time")
 }
