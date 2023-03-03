@@ -53,7 +53,7 @@ fun Application.configureRouting(repository: Repository) {
             )
 
             when (result) {
-                Repository.CreateReservationResult.SUCCESS -> call.respond(HttpStatusCode.NoContent)
+                Repository.CreateReservationResult.SUCCESS -> call.respond(HttpStatusCode.Created)
                 Repository.CreateReservationResult.PARTY_TOO_LARGE -> call.respond(HttpStatusCode.BadRequest, "The party is too large.")
                 Repository.CreateReservationResult.NO_INVENTORY -> call.respond(HttpStatusCode.BadRequest, "No inventory is available for ${reservationDto.date} at ${reservationDto.time}.")
             }
