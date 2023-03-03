@@ -6,7 +6,7 @@ import org.jetbrains.exposed.sql.javatime.date
 import org.jetbrains.exposed.sql.javatime.time
 
 @Serializable
-data class Reservation(
+data class ReservationDto(
     val name: String,
     val email: String,
     val partySize: Int,
@@ -20,9 +20,8 @@ object Reservations : LongIdTable() {
     val partySize = integer("party_size")
     val date = date("date")
     val time = time("time")
-    val inventoryId = long("fk_inventory_id")
 
     init {
-        foreignKey(inventoryId to Inventory.id)
+        uniqueIndex(email, date, time)
     }
 }

@@ -17,4 +17,10 @@ interface Repository {
         PARTY_TOO_LARGE,
         NO_INVENTORY,
     }
+
+    fun createInventory(
+        times: Sequence<LocalTime>,
+        maxPartySize: Int,
+        maxReservations: Int,
+    )
 }

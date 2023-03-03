@@ -6,6 +6,9 @@ import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.batchInsert
+import org.jetbrains.exposed.sql.batchReplace
+import org.jetbrains.exposed.sql.count
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
@@ -48,28 +51,35 @@ class PostgresRepository : Repository {
             val reservationsForInventory = Reservations.join(
                 Inventory,
                 JoinType.INNER,
-                onColumn = Reservations.inventoryId,
-                otherColumn = Inventory.id,
+                onColumn = Reservations.time,
+                otherColumn = Inventory.time,
                 additionalConstraint = {
                     (Reservations.time eq time) and
                         (Reservations.date eq date)
                 },
-            )
-                .selectAll()
-                .toList() // assumption: the result set is small
+            ).selectAll().count()
 
-            if (reservationsForInventory.size < inventoryForTime[Inventory.maxReservations].toLong()) {
+            if (reservationsForInventory < inventoryForTime[Inventory.maxReservations].toLong()) {
                 Reservations.insert {
                     it[this.name] = name
                     it[this.email] = email
                     it[this.partySize] = partySize
                     it[this.date] = date
                     it[this.time] = time
-                    it[this.inventoryId] = inventoryForTime[Inventory.id].value
                 }
                 Repository.CreateReservationResult.SUCCESS
             } else {
                 Repository.CreateReservationResult.NO_INVENTORY
+            }
+        }
+    }
+
+    override fun createInventory(times: Sequence<LocalTime>, maxPartySize: Int, maxReservations: Int) {
+        transaction {
+            Inventory.batchReplace(times) {
+                this[Inventory.time] = it
+                this[Inventory.maxPartySize] = maxPartySize
+                this[Inventory.maxReservations] = maxReservations
             }
         }
     }
