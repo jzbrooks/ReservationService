@@ -59,7 +59,7 @@ class SqlRepositoryTest {
             it.plusMinutes(15)
         }.take(4)
 
-        repo.createInventory(updatedTimes, 2, 10)
+        repo.updateInventory(LocalDate.now(), updatedTimes, 2, 10)
 
         transaction {
             assertThat(Inventory.select { Inventory.maxPartySize eq 2 }.count()).isEqualTo(4)
@@ -68,6 +68,54 @@ class SqlRepositoryTest {
         transaction {
             assertThat(Inventory.select { Inventory.maxPartySize eq 8 }.count()).isEqualTo(6)
         }
+    }
+
+    @Test
+    fun `inventory with reservations is not modified`() = runTest {
+        val times = generateSequence(LocalTime.of(12, 0)) {
+            it.plusMinutes(15)
+        }.take(10)
+
+        val date = LocalDate.of(2024, 10, 30)
+        repo.createInventory(times, 8, 10)
+        repo.createReservation(
+            "Justin Brooks",
+            "justin@example.com",
+            8,
+            date,
+            LocalTime.of(12, 0),
+        )
+
+        val updatedTimes = generateSequence(LocalTime.of(13, 0)) {
+            it.plusMinutes(15)
+        }.take(4)
+
+        val result = repo.updateInventory(date, updatedTimes, 2, 10)
+        assertThat(result).isEqualTo(Repository.UpdateInventoryResult.FAILURE_RESERVATIONS_EXIST)
+    }
+
+    @Test
+    fun `inventory after any reservation is modified`() = runTest {
+        val times = generateSequence(LocalTime.of(12, 0)) {
+            it.plusMinutes(15)
+        }.take(10)
+
+        val reservationDate = LocalDate.of(2024, 10, 30)
+        repo.createInventory(times, 8, 10)
+        repo.createReservation(
+            "Justin Brooks",
+            "justin@example.com",
+            8,
+            reservationDate,
+            LocalTime.of(12, 0),
+        )
+
+        val updatedTimes = generateSequence(LocalTime.of(13, 0)) {
+            it.plusMinutes(15)
+        }.take(4)
+
+        val result = repo.updateInventory(reservationDate.plusDays(1), updatedTimes, 2, 10)
+        assertThat(result).isEqualTo(Repository.UpdateInventoryResult.SUCCESS)
     }
 
     @Test

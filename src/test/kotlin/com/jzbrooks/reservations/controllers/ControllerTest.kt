@@ -29,6 +29,15 @@ class ControllerTest {
             maxPartySize: Int,
             maxReservations: Int,
         ) { }
+
+        override suspend fun updateInventory(
+            beginning: LocalDate,
+            times: Sequence<LocalTime>,
+            maxPartySize: Int,
+            maxReservations: Int,
+        ): Repository.UpdateInventoryResult {
+            return Repository.UpdateInventoryResult.SUCCESS
+        }
     }
 
     val reservation = ReservationDto(
@@ -39,7 +48,7 @@ class ControllerTest {
         "12:00"
     )
 
-    val inventory = InventoryDto(
+    val inventory = InventoryDto.Create(
         "12:00",
         "19:00",
         8,

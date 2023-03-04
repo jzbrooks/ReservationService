@@ -24,4 +24,16 @@ interface Repository {
         maxPartySize: Int,
         maxReservations: Int,
     )
+
+    suspend fun updateInventory(
+        beginning: LocalDate,
+        times: Sequence<LocalTime>,
+        maxPartySize: Int,
+        maxReservations: Int,
+    ): UpdateInventoryResult
+
+    enum class UpdateInventoryResult {
+        SUCCESS,
+        FAILURE_RESERVATIONS_EXIST,
+    }
 }

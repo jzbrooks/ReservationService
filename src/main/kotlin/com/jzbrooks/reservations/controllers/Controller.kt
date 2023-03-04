@@ -64,52 +64,92 @@ class Controller(private val repository: Repository) {
         }
     }
 
-    suspend fun createInventory(inventoryDto: InventoryDto): ControllerResult<Any?> {
+    suspend fun createInventory(inventoryDto: InventoryDto.Create): ControllerResult<Any?> {
+        return when (val dataValidation = validateInventoryRequest(inventoryDto)) {
+            is InventoryValidation.Success -> {
+                val times = generateSequence(dataValidation.startTime) {
+                    it.plusMinutes(15)
+                }.takeWhile { it < dataValidation.endTime }
+
+                repository.createInventory(times, inventoryDto.maxPartySize, inventoryDto.maxReservations)
+
+                return ControllerResult.Success(null)
+            }
+            is InventoryValidation.Error -> ControllerResult.BadRequest(dataValidation.message)
+        }
+    }
+
+    suspend fun updateInventoryAfterDate(inventoryDto: InventoryDto.UpdateAfterDate): ControllerResult<Any?> {
+        if (!validDate.matches(inventoryDto.startDate)) {
+            return ControllerResult.BadRequest("Invalid date - The required format is (mm-dd-yyyy).")
+        }
+
+        val (month, day, year) = inventoryDto.startDate.split('-').map(String::toInt)
+        val date = try {
+            LocalDate.of(year, month, day)
+        } catch (e: DateTimeException) {
+            return ControllerResult.BadRequest("Invalid date $e")
+        }
+
+        return when (val dataValidation = validateInventoryRequest(inventoryDto)) {
+            is InventoryValidation.Success -> {
+                val times = generateSequence(dataValidation.startTime) {
+                    it.plusMinutes(15)
+                }.takeWhile { it < dataValidation.endTime }
+
+                repository.updateInventory(date, times, inventoryDto.maxPartySize, inventoryDto.maxReservations)
+
+                return ControllerResult.Success(null)
+            }
+            is InventoryValidation.Error -> ControllerResult.BadRequest(dataValidation.message)
+        }
+    }
+
+    private fun validateInventoryRequest(inventoryDto: InventoryDto) : InventoryValidation {
         if (inventoryDto.maxPartySize < 1) {
-            return ControllerResult.BadRequest("Maximum party size must at least be one")
+            return InventoryValidation.Error("Maximum party size must at least be one")
         }
 
         if (inventoryDto.maxReservations < 1) {
-            return ControllerResult.BadRequest("Maximum party size must at least be one")
+            return InventoryValidation.Error("Maximum party size must at least be one")
         }
 
         if (!validTime.matches(inventoryDto.startTime)) {
-            return ControllerResult.BadRequest("Invalid time - The required format is (hh:mm)")
+            return InventoryValidation.Error("Invalid time - The required format is (hh:mm)")
         }
 
         val (startHour, startMinutes) = inventoryDto.startTime.split(':').map(String::toInt)
         if (startMinutes % 15 != 0) {
-            return ControllerResult.BadRequest("Inventory can only be created for quarter hour intervals.")
+            return InventoryValidation.Error("Inventory can only be created for quarter hour intervals.")
         }
 
         val startTime = try {
             LocalTime.of(startHour, startMinutes)
         } catch (e: DateTimeException) {
-            return ControllerResult.BadRequest("Invalid time $e")
+            return InventoryValidation.Error("Invalid time $e")
         }
 
         if (!validTime.matches(inventoryDto.endTimeExclusive)) {
-            return ControllerResult.BadRequest("Invalid time - The required format is (hh:mm)")
+            return InventoryValidation.Error("Invalid time - The required format is (hh:mm)")
         }
 
         val (endHour, endMinutes) = inventoryDto.endTimeExclusive.split(':').map(String::toInt)
         if (endMinutes % 15 != 0) {
-            return ControllerResult.BadRequest("Inventory can only be created for quarter hour intervals.")
+            return InventoryValidation.Error("Inventory can only be created for quarter hour intervals.")
         }
 
         val endTime = try {
             LocalTime.of(endHour, endMinutes)
         } catch (e: DateTimeException) {
-            return ControllerResult.BadRequest("Invalid time $e")
+            return InventoryValidation.Error("Invalid time $e")
         }
 
-        val times = generateSequence(startTime) {
-            it.plusMinutes(15)
-        }.takeWhile { it < endTime }
+        return InventoryValidation.Success(startTime, endTime)
+    }
 
-        repository.createInventory(times, inventoryDto.maxPartySize, inventoryDto.maxReservations)
-
-        return ControllerResult.Success(null)
+    private sealed interface InventoryValidation {
+        data class Success(val startTime: LocalTime, val endTime: LocalTime) : InventoryValidation
+        data class Error(val message: String) : InventoryValidation
     }
 
     private companion object {

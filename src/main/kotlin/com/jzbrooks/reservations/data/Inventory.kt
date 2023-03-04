@@ -4,13 +4,30 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.javatime.time
 
-@Serializable
-data class InventoryDto(
-    val startTime: String, // hh:mm
-    val endTimeExclusive: String, // hh:mm
-    val maxPartySize: Int,
-    val maxReservations: Int,
-)
+sealed interface InventoryDto {
+    val startTime: String // hh:mm
+    val endTimeExclusive: String // hh:mm
+    val maxPartySize: Int
+    val maxReservations: Int
+
+    @Serializable
+    data class Create(
+        override val startTime: String, // hh:mm
+        override val endTimeExclusive: String, // hh:mm
+        override val maxPartySize: Int,
+        override val maxReservations: Int,
+    ) : InventoryDto
+
+    @Serializable
+    data class UpdateAfterDate(
+        val startDate: String, // mm-dd-yyyy
+        override val startTime: String, // hh:mm
+        override val endTimeExclusive: String, // hh:mm
+        override val maxPartySize: Int,
+        override val maxReservations: Int,
+    ) : InventoryDto
+}
+
 
 object Inventory : Table() {
     val time = time("time")

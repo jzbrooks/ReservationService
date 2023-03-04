@@ -6,6 +6,7 @@ import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.batchReplace
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
@@ -80,10 +81,35 @@ class SqlRepository(driver: String, connection: String) : Repository {
 
     override suspend fun createInventory(times: Sequence<LocalTime>, maxPartySize: Int, maxReservations: Int) {
         newSuspendedTransaction {
-            Inventory.batchReplace(times) {
+            Inventory.batchInsert(times) {
                 this[Inventory.time] = it
                 this[Inventory.maxPartySize] = maxPartySize
                 this[Inventory.maxReservations] = maxReservations
+            }
+        }
+    }
+
+    override suspend fun updateInventory(
+        beginning: LocalDate,
+        times: Sequence<LocalTime>,
+        maxPartySize: Int,
+        maxReservations: Int,
+    ): Repository.UpdateInventoryResult {
+        return newSuspendedTransaction {
+            val reservationsAfterDate = Reservations.select {
+                Reservations.date greaterEq beginning
+            }.count()
+
+            if (reservationsAfterDate == 0L) {
+                Inventory.batchReplace(times) {
+                    this[Inventory.time] = it
+                    this[Inventory.maxPartySize] = maxPartySize
+                    this[Inventory.maxReservations] = maxReservations
+                }
+
+                Repository.UpdateInventoryResult.SUCCESS
+            } else {
+                Repository.UpdateInventoryResult.FAILURE_RESERVATIONS_EXIST
             }
         }
     }

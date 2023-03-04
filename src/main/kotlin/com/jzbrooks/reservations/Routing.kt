@@ -29,9 +29,18 @@ fun Application.configureRouting(controller: Controller) {
             }
         }
 
-        put("inventory") {
-            val inventoryDto = call.receive<InventoryDto>()
+        post("inventory") {
+            val inventoryDto = call.receive<InventoryDto.Create>()
             when (val result = controller.createInventory(inventoryDto)) {
+                is ControllerResult.Success -> call.respond(HttpStatusCode.Created)
+                is ControllerResult.BadRequest -> call.respond(HttpStatusCode.BadRequest, result.message)
+                is ControllerResult.NotFound -> call.respond(HttpStatusCode.NotFound, result.message)
+            }
+        }
+
+        put("inventory/update") {
+            val inventoryDto = call.receive<InventoryDto.UpdateAfterDate>()
+            when (val result = controller.updateInventoryAfterDate(inventoryDto)) {
                 is ControllerResult.Success -> call.respond(HttpStatusCode.NoContent)
                 is ControllerResult.BadRequest -> call.respond(HttpStatusCode.BadRequest, result.message)
                 is ControllerResult.NotFound -> call.respond(HttpStatusCode.NotFound, result.message)
