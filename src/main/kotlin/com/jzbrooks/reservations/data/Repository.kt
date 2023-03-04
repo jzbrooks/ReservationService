@@ -16,6 +16,7 @@ interface Repository {
         SUCCESS,
         PARTY_TOO_LARGE,
         NO_INVENTORY,
+        CONSTRAINT_VIOLATED,
     }
 
     suspend fun createInventory(

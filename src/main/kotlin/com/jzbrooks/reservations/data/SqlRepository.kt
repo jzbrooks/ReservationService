@@ -6,23 +6,22 @@ import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.batchReplace
-import org.jetbrains.exposed.sql.count
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.sql.SQLException
 import java.time.LocalDate
 import java.time.LocalTime
 
-class PostgresRepository : Repository {
+class SqlRepository(driver: String, connection: String) : Repository {
 
     init {
         val config = HikariConfig().apply {
-            driverClassName = "org.postgresql.Driver"
-            jdbcUrl = System.getenv("JDBC_DATABASE_URL")
+            driverClassName = driver
+            jdbcUrl = connection
             maximumPoolSize = 3
             isAutoCommit = false
             transactionIsolation = "TRANSACTION_REPEATABLE_READ"
@@ -61,14 +60,18 @@ class PostgresRepository : Repository {
             ).selectAll().count()
 
             if (reservationsForInventory < inventoryForTime[Inventory.maxReservations].toLong()) {
-                Reservations.insert {
-                    it[this.name] = name
-                    it[this.email] = email
-                    it[this.partySize] = partySize
-                    it[this.date] = date
-                    it[this.time] = time
+                try {
+                    Reservations.insert {
+                        it[this.name] = name
+                        it[this.email] = email
+                        it[this.partySize] = partySize
+                        it[this.date] = date
+                        it[this.time] = time
+                    }
+                    Repository.CreateReservationResult.SUCCESS
+                } catch (e: SQLException) {
+                    Repository.CreateReservationResult.CONSTRAINT_VIOLATED
                 }
-                Repository.CreateReservationResult.SUCCESS
             } else {
                 Repository.CreateReservationResult.NO_INVENTORY
             }

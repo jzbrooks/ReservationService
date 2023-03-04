@@ -17,6 +17,7 @@ dependencies {
     implementation(libs.postgres)
     implementation(libs.logback)
     testImplementation(kotlin("test"))
+    testImplementation(libs.h2)
     testImplementation(libs.assertk)
     testImplementation(libs.ktCoroutinesTest)
 }
