@@ -44,7 +44,6 @@ class SqlRepository(driver: String, connection: String) : Repository {
         time: LocalTime,
     ): Repository.CreateReservationResult {
         return newSuspendedTransaction {
-            // todo: Is there a way to combine these two queries? Is Exposed going to make that hard?
             val inventoryForTime = Inventory
                 .select { (Inventory.time eq time) and (Inventory.maxPartySize greaterEq partySize) }
                 .singleOrNull() ?: return@newSuspendedTransaction Repository.CreateReservationResult.NO_INVENTORY_FOR_PARTY

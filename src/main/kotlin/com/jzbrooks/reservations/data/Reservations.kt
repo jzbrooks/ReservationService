@@ -11,7 +11,7 @@ data class ReservationDto(
     val name: String,
     val email: String,
     val partySize: Int,
-    val date: String, // mm-dd-yyyy // todo: would be nice to improve this
+    val date: String, // mm-dd-yyyy
     val time: String, // hh:mm
 )
 
