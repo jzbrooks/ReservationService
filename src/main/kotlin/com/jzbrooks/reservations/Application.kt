@@ -1,5 +1,6 @@
 package com.jzbrooks.reservations
 
+import com.jzbrooks.reservations.controllers.Controller
 import com.jzbrooks.reservations.data.PostgresRepository
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
@@ -25,9 +26,11 @@ fun main() {
             json()
         }
 
-        // shortcut: Dagger for DI
+        // Manual dependency injection doesn't scale super
+        // well, but it is good enough for this purpose
         val repo = PostgresRepository()
+        val controller = Controller(repo)
 
-        configureRouting(repo)
+        configureRouting(controller)
     }.start(wait = true)
 }

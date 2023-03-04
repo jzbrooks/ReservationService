@@ -4,7 +4,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 interface Repository {
-    fun createReservation(
+    suspend fun createReservation(
         name: String,
         email: String,
         partySize: Int,
@@ -18,7 +18,7 @@ interface Repository {
         NO_INVENTORY,
     }
 
-    fun createInventory(
+    suspend fun createInventory(
         times: Sequence<LocalTime>,
         maxPartySize: Int,
         maxReservations: Int,

@@ -15,8 +15,10 @@ dependencies {
     implementation(libs.bundles.exposed)
     implementation(libs.hikari)
     implementation(libs.postgres)
-    implementation("ch.qos.logback:logback-classic:1.2.9")
+    implementation(libs.logback)
     testImplementation(kotlin("test"))
+    testImplementation(libs.assertk)
+    testImplementation(libs.ktCoroutinesTest)
 }
 
 tasks.test {
