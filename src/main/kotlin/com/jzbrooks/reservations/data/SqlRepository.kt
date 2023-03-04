@@ -47,7 +47,7 @@ class SqlRepository(driver: String, connection: String) : Repository {
             // todo: Is there a way to combine these two queries? Is Exposed going to make that hard?
             val inventoryForTime = Inventory
                 .select { (Inventory.time eq time) and (Inventory.maxPartySize greaterEq partySize) }
-                .singleOrNull() ?: return@newSuspendedTransaction Repository.CreateReservationResult.PARTY_TOO_LARGE
+                .singleOrNull() ?: return@newSuspendedTransaction Repository.CreateReservationResult.NO_INVENTORY_FOR_PARTY
 
             val reservationsForInventory = Reservations.join(
                 Inventory,
@@ -74,7 +74,7 @@ class SqlRepository(driver: String, connection: String) : Repository {
                     Repository.CreateReservationResult.CONSTRAINT_VIOLATED
                 }
             } else {
-                Repository.CreateReservationResult.NO_INVENTORY
+                Repository.CreateReservationResult.INVENTORY_AT_CAPACITY
             }
         }
     }

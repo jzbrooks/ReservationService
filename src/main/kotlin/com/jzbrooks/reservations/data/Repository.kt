@@ -14,8 +14,8 @@ interface Repository {
 
     enum class CreateReservationResult {
         SUCCESS,
-        PARTY_TOO_LARGE,
-        NO_INVENTORY,
+        NO_INVENTORY_FOR_PARTY,
+        INVENTORY_AT_CAPACITY,
         CONSTRAINT_VIOLATED,
     }
 

@@ -58,8 +58,8 @@ class Controller(private val repository: Repository) {
 
         return when (result) {
             Repository.CreateReservationResult.SUCCESS -> ControllerResult.Success(null)
-            Repository.CreateReservationResult.PARTY_TOO_LARGE -> ControllerResult.BadRequest("The party is too large.")
-            Repository.CreateReservationResult.NO_INVENTORY -> ControllerResult.BadRequest("No inventory is available for ${reservationDto.date} at ${reservationDto.time}.")
+            Repository.CreateReservationResult.NO_INVENTORY_FOR_PARTY -> ControllerResult.BadRequest("No inventory is available for a party size of ${reservationDto.partySize} at ${reservationDto.time}")
+            Repository.CreateReservationResult.INVENTORY_AT_CAPACITY -> ControllerResult.BadRequest("All inventory is taken for ${reservationDto.date} at ${reservationDto.time}.")
             Repository.CreateReservationResult.CONSTRAINT_VIOLATED -> ControllerResult.BadRequest("A reservation already exists for that time.")
         }
     }

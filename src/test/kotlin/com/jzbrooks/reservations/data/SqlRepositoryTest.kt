@@ -170,6 +170,31 @@ class SqlRepositoryTest {
     }
 
     @Test
+    fun `reservation not inserted with inventory at capacity`() = runTest {
+        repo.createInventory(sequenceOf(LocalTime.of(12, 0)), 8, 3)
+
+        repeat(3) {
+            repo.createReservation(
+                "Justin Brooks $it",
+                "$it@example.com",
+                8,
+                LocalDate.of(2024, 10, 30),
+                LocalTime.of(12, 0),
+            )
+        }
+
+        val result = repo.createReservation(
+            "Justin Brooks IV",
+            "4@example.com",
+            8,
+            LocalDate.of(2024, 10, 30),
+            LocalTime.of(12, 0),
+        )
+
+        assertThat(result).isEqualTo(Repository.CreateReservationResult.INVENTORY_AT_CAPACITY)
+    }
+
+    @Test
     fun `duplicate reservation not inserted`() = runTest {
         repo.createInventory(sequenceOf(LocalTime.of(12, 0)), 8, 10)
         repo.createReservation(
