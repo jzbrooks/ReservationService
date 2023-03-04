@@ -17,8 +17,8 @@ data class ReservationDto(
 
 object Reservations : Table() {
     val email = varchar("email", 50)
-    val date = date("date")
-    val time = time("time")
+    val date = date("date").index()
+    val time = time("time").index()
     val partySize = integer("party_size")
     val name = varchar("name", 70)
 
