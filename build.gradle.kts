@@ -1,10 +1,21 @@
 plugins {
+    id("io.ktor.plugin") version "2.2.4"
     id("org.jetbrains.kotlin.jvm") version "1.8.0"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.8.0"
 }
 
 group = "com.jzbrooks"
 version = "1.0-SNAPSHOT"
+
+application {
+    mainClass.set("com.jzbrooks.reservations.ApplicationKt")
+}
+
+ktor {
+    fatJar {
+        archiveFileName.set("ReservationService.jar")
+    }
+}
 
 repositories {
     mavenCentral()

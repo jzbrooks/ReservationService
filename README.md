@@ -1,6 +1,6 @@
 # ReservationService
 
-## Building
+## Building the Service
 - `./gradlew build` runs tests and builds the application
 - `./gradlew tasks` shows all available tasks
 
@@ -12,6 +12,9 @@ but it isn't always able to do that.
 The app will create the schema, but you'll need to
 provide a database connection. H2 or PostgreSQL should work
 okay.
+
+### Container
+I didn't use it during the bulk of development, but to make running/evaluating easier, I added a docker compose configuration, so `docker compose up` will setup postgres and the service for requests on `localhost:9090` by default.
 
 ## Design
 
@@ -41,3 +44,5 @@ that should execute appropriate SQL for each DBMS underneath.
 - Some simple execution plans were run, but there's quite possibly room for improvement in the database schema or queries. I learned Postgres' optimizer tends to prefer full table scans over an index scan for small data sets.
 - JetBrain's Exposed ORM for Kotlin [doesn't support all SQL operations](https://github.com/JetBrains/Exposed/wiki/FAQ). I don't love the DSL, either. [SQLDelight](https://github.com/cashapp/sqldelight) is a pretty sharp too, but it's Postgres support is experimental _and_ a required package for the dialect [doesn't seem to be published to the standard package repository](https://central.sonatype.com/search?q=sqldelight%2520postgres-dialect).
 - I suspect that some queries could be improved or combined to better leverage DBMS features for performance and scalability gains.
+- Optimizing the final jar with R8 would be nice.
+- Running tests when building the docker image would be a good idea.
