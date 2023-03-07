@@ -22,6 +22,7 @@ services:
     stdin_open: true
     tty: true
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "9090:8080"
