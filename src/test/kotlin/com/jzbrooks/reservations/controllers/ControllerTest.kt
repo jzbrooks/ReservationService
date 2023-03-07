@@ -38,6 +38,14 @@ class ControllerTest {
         ): Repository.UpdateInventoryResult {
             return Repository.UpdateInventoryResult.SUCCESS
         }
+
+        override suspend fun getReservations(): List<ReservationDto> {
+            return emptyList()
+        }
+
+        override suspend fun getInventory(): List<InventoryDto.Get> {
+            return emptyList()
+        }
     }
 
     val reservation = ReservationDto(
