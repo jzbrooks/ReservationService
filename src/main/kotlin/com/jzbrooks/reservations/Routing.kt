@@ -19,6 +19,22 @@ fun Application.configureRouting(controller: Controller) {
             call.respondText("Registration Service v1")
         }
 
+        get("reservations") {
+            when (val result = controller.getReservations()) {
+                is ControllerResult.Success -> call.respond(result.data)
+                is ControllerResult.BadRequest -> call.respond(HttpStatusCode.BadRequest, result.message)
+                is ControllerResult.NotFound -> call.respond(HttpStatusCode.NotFound, result.message)
+            }
+        }
+
+        get("inventory") {
+            when (val result = controller.getInventory()) {
+                is ControllerResult.Success -> call.respond(result.data)
+                is ControllerResult.BadRequest -> call.respond(HttpStatusCode.BadRequest, result.message)
+                is ControllerResult.NotFound -> call.respond(HttpStatusCode.NotFound, result.message)
+            }
+        }
+
         // Assumption: there is only one timezone.
         post("reservations") {
             val reservationDto = call.receive<ReservationDto>()

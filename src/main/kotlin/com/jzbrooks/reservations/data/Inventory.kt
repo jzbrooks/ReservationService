@@ -5,10 +5,20 @@ import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.javatime.time
 
 sealed interface InventoryDto {
-    val startTime: String // hh:mm
-    val endTimeExclusive: String // hh:mm
     val maxPartySize: Int
     val maxReservations: Int
+
+    @Serializable
+    data class Get(
+        val time: String, // hh:mm
+        override val maxPartySize: Int,
+        override val maxReservations: Int,
+    ) : InventoryDto
+
+    interface Write : InventoryDto {
+        val startTime: String // hh:mm
+        val endTimeExclusive: String // hh:mm
+    }
 
     @Serializable
     data class Create(
@@ -16,7 +26,7 @@ sealed interface InventoryDto {
         override val endTimeExclusive: String, // hh:mm
         override val maxPartySize: Int,
         override val maxReservations: Int,
-    ) : InventoryDto
+    ) : InventoryDto.Write
 
     @Serializable
     data class UpdateAfterDate(
@@ -25,9 +35,8 @@ sealed interface InventoryDto {
         override val endTimeExclusive: String, // hh:mm
         override val maxPartySize: Int,
         override val maxReservations: Int,
-    ) : InventoryDto
+    ) : InventoryDto.Write
 }
-
 
 object Inventory : Table() {
     val time = time("time")

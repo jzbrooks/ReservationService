@@ -46,3 +46,4 @@ that should execute appropriate SQL for each DBMS underneath.
 - I suspect that some queries could be improved or combined to better leverage DBMS features for performance and scalability gains.
 - Optimizing the final jar with R8 would be nice.
 - Running tests when building the docker image would be a good idea.
+- GET endpoints would benefit from query parameters for date ranges, paging, and perhaps others.

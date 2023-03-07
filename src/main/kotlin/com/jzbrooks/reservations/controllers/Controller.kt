@@ -9,6 +9,16 @@ import java.time.LocalTime
 
 class Controller(private val repository: Repository) {
 
+    suspend fun getReservations(): ControllerResult<List<ReservationDto>> {
+        val results = repository.getReservations()
+        return ControllerResult.Success(results)
+    }
+
+    suspend fun getInventory(): ControllerResult<List<InventoryDto.Get>> {
+        val results = repository.getInventory()
+        return ControllerResult.Success(results)
+    }
+
     suspend fun createReservation(reservationDto: ReservationDto): ControllerResult<Any?> {
         if (reservationDto.name.isEmpty()) {
             return ControllerResult.BadRequest("Name must be specified.")
@@ -105,7 +115,7 @@ class Controller(private val repository: Repository) {
         }
     }
 
-    private fun validateInventoryRequest(inventoryDto: InventoryDto) : InventoryValidation {
+    private fun validateInventoryRequest(inventoryDto: InventoryDto.Write) : InventoryValidation {
         if (inventoryDto.maxPartySize < 1) {
             return InventoryValidation.Error("Maximum party size must at least be one")
         }

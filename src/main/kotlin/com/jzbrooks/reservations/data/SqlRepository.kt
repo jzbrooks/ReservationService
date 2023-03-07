@@ -16,8 +16,11 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.sql.SQLException
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 class SqlRepository(driver: String, connection: String) : Repository {
+    private val dateFormatter = DateTimeFormatter.ofPattern("MM-dd-yyyy")
+    private val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
     init {
         val config = HikariConfig().apply {
@@ -33,6 +36,20 @@ class SqlRepository(driver: String, connection: String) : Repository {
 
         transaction {
             SchemaUtils.create(Reservations, Inventory)
+        }
+    }
+
+    override suspend fun getReservations(): List<ReservationDto> {
+        return newSuspendedTransaction {
+            Reservations.selectAll().map {
+                ReservationDto(
+                    it[Reservations.name],
+                    it[Reservations.email],
+                    it[Reservations.partySize],
+                    dateFormatter.format(it[Reservations.date]),
+                    timeFormatter.format(it[Reservations.time]),
+                )
+            }
         }
     }
 
@@ -74,6 +91,18 @@ class SqlRepository(driver: String, connection: String) : Repository {
                 }
             } else {
                 Repository.CreateReservationResult.INVENTORY_AT_CAPACITY
+            }
+        }
+    }
+
+    override suspend fun getInventory(): List<InventoryDto.Get> {
+        return newSuspendedTransaction {
+            Inventory.selectAll().map {
+                InventoryDto.Get(
+                    timeFormatter.format(it[Inventory.time]),
+                    it[Inventory.maxPartySize],
+                    it[Inventory.maxReservations]
+                )
             }
         }
     }

@@ -4,6 +4,8 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 interface Repository {
+    suspend fun getReservations(): List<ReservationDto>
+
     suspend fun createReservation(
         name: String,
         email: String,
@@ -18,6 +20,8 @@ interface Repository {
         INVENTORY_AT_CAPACITY,
         CONSTRAINT_VIOLATED,
     }
+
+    suspend fun getInventory(): List<InventoryDto.Get>
 
     suspend fun createInventory(
         times: Sequence<LocalTime>,
